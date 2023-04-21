@@ -1,0 +1,258 @@
+// COPYRIGHTS.© ABANOB AYOUB
+// Description: Given 12 Baseball players' names and averages, the system place them in the team
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int ROWSIZE = 12;
+const int COLUMNSIZE = 6;
+const int NUMOFPLAYERS= 12;
+const int UPPERBOUND = 11;
+const int LOWERBOUND = 0;
+
+//Function Prototype
+void displayPlayersData(string playerDataArr[][COLUMNSIZE]);
+
+int main() {
+	//Declration
+	string playersData[ROWSIZE][COLUMNSIZE];
+	int playersAverage[NUMOFPLAYERS];
+	string playersPositions[12] = {"1B", "2B","SS","3B","C","P","LCF","LF","RF","RCF","OUT1","OUT2"};
+	int positionFull[12] = { 0,0,0,0,0,0,0,0,0,0 ,0 ,0 };
+	int randNum;
+
+	//Get user Input
+	cout << "Enter " << NUMOFPLAYERS << " Player names : " << endl;
+
+	for (int namesCounter = 0; namesCounter < NUMOFPLAYERS; namesCounter++) //Collect players names
+	{
+		cout << "What is player " << namesCounter + 1 << "'s " << "name: ";
+		cin >> playersData[namesCounter][0];
+	}
+	cout << endl << endl;
+
+	for (int averageCounter = 0; averageCounter < NUMOFPLAYERS; averageCounter++) //Collect players averages
+	{
+		cout << "What is " << playersData[averageCounter][0] << "'s " << "average: ";
+		cin >> playersAverage[averageCounter];
+	}
+	cout << endl << endl;
+
+	//Calculations
+	for (int i = 0; i < NUMOFPLAYERS; i++) //Put player names in order based on their average
+	{
+		int counter = i;
+		while (counter < NUMOFPLAYERS - 1)
+		{
+			if (playersAverage[i] < playersAverage[counter + 1])
+			{
+				//Swap Players Averages
+				int temAverage = playersAverage[i]; //Temporarily save the player average
+				playersAverage[i] = playersAverage[counter + 1];
+				playersAverage[counter + 1] = temAverage;
+				//Swap Players Names
+				string temName = playersData[i][0]; //Temporarily save the name of the player to move it back/for-ward
+				playersData[i][0] = playersData[counter + 1][0];
+				playersData[counter + 1][0] = temName;
+				counter += 1;
+			}
+			else
+				counter += 1;
+		}
+	}
+
+	
+	srand(time(0));
+	for (int firstColumnCounter = 1; firstColumnCounter< 2; firstColumnCounter++) //1st Coulmn loop
+	{
+		for (int rowsOfFirstColumn = 0; rowsOfFirstColumn < ROWSIZE; rowsOfFirstColumn++) //Row loop
+		{
+			randNum = rand() % (UPPERBOUND - LOWERBOUND + 1) + LOWERBOUND; //Generate a random number
+			
+			int positionCheckerCounter = 0;
+			while (positionCheckerCounter < 12)
+			{
+				if (positionFull[randNum] != 0) {
+					randNum = rand() % (UPPERBOUND - LOWERBOUND + 1) + LOWERBOUND;
+					positionCheckerCounter = 0;
+				}
+				else {
+					playersData[rowsOfFirstColumn][firstColumnCounter] = playersPositions[randNum];
+					positionFull[randNum] += 1;
+					positionCheckerCounter += 1;
+					break;
+				}
+			}
+		}
+	}
+
+	for (int secondColumnCounter = 2; secondColumnCounter< 3; secondColumnCounter++) //2nd Coulmn loop
+	{
+		for (int rowsCounter = 0; rowsCounter < ROWSIZE; rowsCounter++) //Row loop
+		{
+			//Check player's position in 1st inning parallel array does it has 1 or 2?
+			string tempPosition;
+			int positionIndex=-1;
+			tempPosition = playersData[rowsCounter][secondColumnCounter - 1];
+			for (int w = 0; w < 12; w++)
+			{
+				if (tempPosition == playersPositions[w]) {
+					positionIndex = w;
+					break;
+				}
+			}
+
+			if (positionIndex < 6) { //InField, so you should assign an OutField
+				int outFieldUpperBound = 11;
+				int outFieldLowerBound = 6;
+				randNum = rand() % (outFieldUpperBound - outFieldLowerBound + 1) + outFieldLowerBound; //Generate a random number from 6->11
+				
+				int positionCheckerCounter = 0;
+				while (positionCheckerCounter <= rowsCounter-1) //check each position in this column to make sure this random hasn't picked yet
+				{
+					if (playersPositions[randNum] == playersData[positionCheckerCounter][2]) {
+						randNum = rand() % (outFieldUpperBound - outFieldLowerBound + 1) + outFieldLowerBound;//Re-Generate a random number from 6->11
+						positionCheckerCounter = 0;
+					}
+					else {
+						positionCheckerCounter += 1;
+					}
+				}
+				playersData[rowsCounter][secondColumnCounter] = playersPositions[randNum];
+				positionFull[randNum] += 1;
+			}
+			
+			else if (positionIndex > 5) { //OutField, so you should assign an InField 
+				int outFieldUpperBound = 5;
+				int outFieldLowerBound = 0;
+				randNum = rand() % (outFieldUpperBound - outFieldLowerBound + 1) + outFieldLowerBound; //Generate a random number from 0->5
+
+				int positionCheckerCounter = 0;
+				while (positionCheckerCounter <= rowsCounter-1)
+				{
+					if (playersPositions[randNum] == playersData[positionCheckerCounter][2]) {
+						randNum = rand() % (outFieldUpperBound - outFieldLowerBound + 1) + outFieldLowerBound; //Re-Generate a random number from 0->5
+						positionCheckerCounter = 0;
+					}
+					else {
+						positionCheckerCounter += 1;
+					}
+				}
+				playersData[rowsCounter][secondColumnCounter] = playersPositions[randNum];
+				positionFull[randNum] += 1;
+			}
+		}
+	}
+
+	for (int lastColumnsCounter = 3; lastColumnsCounter < 6; lastColumnsCounter++) //3rd, 4th, 5th Coulmn loop
+	{
+		for (int rowsCounter = 0; rowsCounter < ROWSIZE; rowsCounter++) //Row loop
+		{
+			int currentRow = rowsCounter;
+
+			int u = 1;
+			while (u < lastColumnsCounter) //check which positions this player had played in the previous Innings
+			{
+				string tempPosition = playersData[rowsCounter][u];
+				for (int n = 0; n < 12; n++)
+				{
+					if (tempPosition == playersPositions[n]) {
+						positionFull[n] += 1;
+						break;
+					}
+				}
+				u += 1;
+			}
+
+			randNum = rand() % (UPPERBOUND - LOWERBOUND + 1) + LOWERBOUND; //Generate a random number
+			
+			
+			while (rowsCounter == 0) { //While loop for the First Row Element
+				if (positionFull[randNum] > lastColumnsCounter -1)
+				{
+					randNum = rand() % (UPPERBOUND - LOWERBOUND + 1) + LOWERBOUND;
+					rowsCounter = 0;
+				}
+				else {
+					rowsCounter += 1; //get out of this loop
+				}
+			}
+
+			if (rowsCounter > currentRow) { //If you executed the previous "else" statement, re-assign rowsCounter to its value
+				rowsCounter = currentRow;
+			}
+			
+			int randomizationAttempt = 0;
+			int rowCheckerCounter = 0;
+			while (rowCheckerCounter < rowsCounter)
+			{
+				if (playersPositions[randNum] == playersData[rowCheckerCounter][lastColumnsCounter] || positionFull[randNum]> lastColumnsCounter-1) {
+					/*positionFull[randNum] += 1;*/
+					randNum = rand() % (UPPERBOUND - LOWERBOUND + 1) + LOWERBOUND; //Re-Generate a random number
+					rowCheckerCounter = 0;
+					randomizationAttempt += 1;
+					
+					if (randomizationAttempt > 30) {
+						break;
+					}
+				}
+				else {
+					rowCheckerCounter += 1;
+				}
+			}
+			if (randomizationAttempt > 30) {
+				rowsCounter = 0;
+			}
+			else {
+				playersData[rowsCounter][lastColumnsCounter] = playersPositions[randNum];
+			}
+			
+			//positionFull[randNum] += 1;
+			
+			//Reset The positionFUll Array TO BE READY for the next Row	
+			for (int n = 0; n < 12; n++)
+			{
+				positionFull[n] = lastColumnsCounter - 1;
+			}
+		}
+		//Reset The positionFUll Array TO BE READY for the next Column
+		for (int n = 0; n < 12; n++)
+		{
+			positionFull[n] = lastColumnsCounter;
+		}
+
+	}
+
+	//Output
+	cout << "Game lineup and field positions:" << endl;
+	cout << "Name      " << "Inning 1  " << "Inning 2  " << "Inning 3  " << "Inning 4  "
+		<< "Inning 5  " << endl;
+	displayPlayersData(playersData); //CALL the Function "displayPlayersData"
+
+	return 0;
+}
+
+void displayPlayersData(string playerDataArr[][COLUMNSIZE]) {
+
+	for (int i = 0; i < ROWSIZE; i++)  //Rows LOOP
+	{
+		for (int h = 0; h < COLUMNSIZE; h++) //Column LOOP
+		{
+			string outPut = playerDataArr[i][h]; //this string will temporarly hold the output that will display 
+			cout << outPut;
+
+			for (int k = 10; k > outPut.length(); k--)  //Spaces LOOP
+			{
+				cout << " ";
+			}
+		}
+		cout << endl;
+	}
+}//END
+
+
+// COPYRIGHTS.© ABANOB AYOUB
+// COPYRIGHTS.© ABANOB AYOUB
